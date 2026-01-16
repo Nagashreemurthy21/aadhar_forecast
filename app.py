@@ -71,10 +71,22 @@ with st.sidebar:
         year_range = None
 
     states = sorted(df["state"].dropna().unique()) if "state" in df.columns else []
-    cities = sorted(df["district"].dropna().unique()) if "district" in df.columns else []
-
     state_filter = st.multiselect("State", states)
+
+    # 🔑 Dynamic city binding based on selected state(s)
+    if state_filter:
+        cities = (
+            df[df["state"].isin(state_filter)]["district"]
+            .dropna()
+            .unique()
+        )
+    else:
+        cities = df["district"].dropna().unique()
+
+    cities = sorted(cities)
+
     city_filter = st.multiselect("City", cities)
+
 
     top_n = st.slider("Top Cities (Charts)", 5, 15, 8)
 
@@ -117,7 +129,7 @@ city_df = (
     .head(top_n)
 )
 
-st.markdown('<div class="section-header">🍑 City Distribution</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header">City Distribution</div>', unsafe_allow_html=True)
 
 fig_pie = px.pie(
     city_df,
@@ -128,7 +140,7 @@ fig_pie = px.pie(
 fig_pie.update_layout(margin=dict(t=20, b=20))
 st.plotly_chart(fig_pie, use_container_width=True)
 
-st.markdown('<div class="section-header">🏙 Top Cities</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header">Top Cities</div>', unsafe_allow_html=True)
 
 fig_bar = px.bar(
     city_df,
@@ -141,7 +153,7 @@ fig_bar.update_layout(margin=dict(l=40, r=20, t=30, b=40))
 st.plotly_chart(fig_bar, use_container_width=True)
 
 # -------------------- IMPROVED HEATMAP --------------------
-st.markdown('<div class="section-header">🔥 Demand Heatmap</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header">Demand Heatmap</div>', unsafe_allow_html=True)
 
 if "date" in filtered.columns and filtered["district"].nunique() > 1:
     filtered["year"] = filtered["date"].dt.year
